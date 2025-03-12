@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Result</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+      margin-left: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .pass {
+      color: rgb(19, 136, 3);
+      font-family: Copperplate, Papyrus, fantasy;
+    }
+    .fail {
+      color: rgb(160, 16, 16);
+        font-family: Copperplate, Papyrus, fantasy;
+    }
+    
+    .blah{
+        color: #455e61;
+    }
+
+    .button {
+      display: inline-block;
+      border-radius: 7px;
+      background-color: #35a800;
+      border: none;
+      color: #FFFFFF;
+      text-align: center;
+      font-size: 20px;
+      padding: 10px;
+      width: 150px;
+      transition: all 0.5s;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .button span {
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+      transition: 0.5s;
+    }
+
+    .button span:after {
+      content: '\00bb';
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      right: -20px;
+      transition: 0.5s;
+    }
+
+    .button:hover span {
+      padding-right: 25px;
+    }
+
+    .button:hover span:after {
+      opacity: 1;
+      right: 0;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <H2 class="blah">IMAM ABOOHURAIRA SUNNI MADRASA</H2>
+    <h2>Result 2024-2025</h2>
+    <form id="resultForm">
+      <input type="hidden" id="sheetId" value="1QzvVFtCdYiXjJsHzUDiKb0sFIhPGWRAapFwj45nIq0Q">
+      <input type="text" id="studentName" placeholder="students Id or Name" required>
+      <button class="button" style="vertical-align:middle"><span>Submit </span></button>
+    </form>
+    <div id="resultContainer">Loading...</div>
+  </div>
+
+
+  <script>
+    document.getElementById('resultForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      fetchResult();
+    });
+
+    function getQueryParams() {
+      var params = {};
+      var queryString = window.location.search.substring(1);
+      var regex = /([^&=]+)=([^&]*)/g;
+      var m;
+      while (m = regex.exec(queryString)) {
+        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+      }
+      return params;
+    }
+
+    function fetchResult() {
+      var sheetId = document.getElementById('sheetId').value;
+      var studentName = document.getElementById('studentName').value;
+
+      var result = submitDataForResults(sheetId, studentName);
+      displayResult(result);
+      showModal();
+    }
+
+    function displayResult(result) {
+      console.log('Received result:', result); // Debugging statement
+      var studentName = document.getElementById('studentName').value.toLowerCase();
+      var rows = result.split('\n');
+      var headers = rows[0].split(',');
+      var studentData = rows.find(row => row.toLowerCase().includes(studentName));
+
+      if (studentData) {
+        var data = studentData.split(',');
+        var table = '<table>';
+        headers.forEach((header, index) => {
+          var cellClass = (data[index].toLowerCase() === 'pass') ? 'pass' : (data[index].toLowerCase() === 'fail') ? 'fail' : '';
+          table += '<tr><th>' + header + '</th><td class="' + cellClass + '">' + data[index] + '</td></tr>';
+        });
+        table += '</table>';
+        document.getElementById('resultContainer').innerHTML = table;
+      } else {
+        document.getElementById('resultContainer').innerHTML = 'No results found for ' + studentName;
+      }
+    }
+
+    function showModal() {
+      var modal = document.getElementById("resultModal");
+      var span = document.getElementsByClassName("close")[0];
+
+      modal.style.display = "flex";
+
+      span.onclick = function() {
+        modal.style.display = "none";
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+    }
+
+    window.onload = function() {
+      document.getElementById('resultContainer').innerHTML = '';
+    };
+
+    function submitDataForResults(sheetId, studentName) {
+      var csvData = `Student ID,Full Name,Father's Name,Class,Subject 1,Subject 2,Subject 3,Subject 4,Subject 5,Subject 6,PRACTICAL,Status,Location
+
+14,Adhila,Sideeque,std 1,A++,B,C,,,,C+,PASS,Parakkalputhanpurakkal,, ✔️
+
+16,Nsriya Naseer,Naseer,std 1,B+,C+,C,,,,C,PASS,Pitterthikudi,, ✔️
+
+35,MUHAMMAD AFHAN,Haneef,std 1,A,B+,A,,,,C+,PASS,Idayalil,, ✔️
+
+36,INAYA FATHIMA,Noufal,std 1,A++,B,A,,,,B,PASS,Idayalil,, ✔️
+
+38,AYZAL FATHIMA,Niyas,std 1,B+,B,B,,,,C+,PASS,Idayalil,, ✔️
+
+39,MUHAMMAD AKBAR,Ashraf,std 1,A++,B,C,,,,B,PASS,Pullamkulam,, ✔️
+
+40,MUHAMMED FARHAN,Muhammed Saquafi,std 1,A,C+,B,,,,B,PASS,Cherupuram,, ✔️
+
+01,MUHAMMAD ABDUL HAKEEM,MEERAN SAQAFI,std 2,A+,A,B,B+,,,B+,PASS,CHERUPURAM, ✔️
+
+02,MUHAMMAD M T,Thajudheen,std 2,A+,A+,B+,A,,,A,PASS,MARATHIL, ✔️
+
+03,MUHAMMAD HANAN ,MUHAMMAD SAQAFI,std 2,A++,A+,B+,A,,,A+,PASS,CHERUPURAM, ✔️
+
+04,MUHAMMAD MISHAB,ABOOBACKER MAHLARI,std 2,A++,A,B,B,,,A,PASS,CHERUPURAM, ✔️
+
+06,AYISHA ADHEEBA,ABOOBACKER MAHLARI,std 2,C,C+,C,B+,,,B+,PASS,CHERUPURAM, ✔️
+
+07,KHADEEJA ADABIYA,ABOOBACKER MAHLARI,std 2,C,C+,C,C+,,,B+,PASS,CHERUPURAM, ✔️
+
+08,MUHAMMAD SAHAL,JUNAID,std 2,C+,B+,C+,C+,,,B,PASS,PAZHAMBALLITHAZHA, ✔️
+
+09,MUHAMMAD SUHAIL,JUNAID,std 2,A,B+,C+,B,,,A,PASS,PAZHAMPALLITHAZHA, ✔️
+
+29,MUHAMMAD HISHAM,Noufal,std 4,C,C,C,C,C+,,C+,PASS,Idayalil, ✔️
+
+05,KHADEEJA SHAMEEMA,ALI SAQAFI,std 6,B,B+,B+,C+,A,,A,PASS,CHENNAD, ✔️
+
+12,MUHAMMAD FAIZAN,SHEFIN,UKG,A,A,,,,,A,PASS,PALICKAL, ✔️
+
+19,FATHIMA SWALHA,JUNAID,UKG,D,C+,,,,,C+,FAIL,PAZHAMBALLITHAZHAM, ❌
+
+17,MUHAMMED AMRAD,NAVAS,std 3,B+,C,B+,C,A,,B,PASS,CHAKKUMTHAZAHTH, ✔️
+
+18,AYISHA AMRIN,HAMZA,std 3,D,D,D,C,,,D,FAIL,IDAPPARA, ❌
+
+11,ADNAN SIDHIQUE,SIDHIQUE,std 4,C,C,B,B,B+,,A+,PASS,PARAKKAL PUTHANPURAKKAL, ✔️
+
+22,ASLAM SHA IBRAHIM,IBRAHIM,std 4,B+,B+,A,B,A,,A+,PASS,MURIYAYAM, ✔️
+
+15,MUHAMMED IMRAN,JANISH,std 2,B+,B+,B,B+,,,B,PASS,PARAMBANGAD, ✔️
+
+13,MUHAMMAD ZAYAN,SHEFIN,std 2,B,A,C+,B,,,B,PASS,PALICKAL, ✔️
+
+32,MUHAMMAD BILAL,NOUSHAD,std 2,A++,A++,A,A+,,,A++,PASS,POOKUZHI, ✔️
+
+33,MUHAMMAD SINAN,INSAMAM ALIYAR,std 2,B,B+,C+,B+,,,B,PASS,THANDATHIL, ✔️
+
+23,MUHAMMED RAMEES,SALEEM,std 2,B,A,B,C+,,,A,PASS,PUTHANPURA,
+
+28,FATHIMA HANNA,ABOOBAKKAR MAHLARI,UKG,A,A,,,,,A+,PASS,CHERUPURAM,`; 
+      return csvData;
+    }
+  </script>
+
+</body>
+</html>
